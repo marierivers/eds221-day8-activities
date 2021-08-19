@@ -1,0 +1,62 @@
+---
+title: "gross_graph"
+author: "Marie Rivers"
+date: "8/18/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+
+library(patchwork)
+library(ggrepel)
+library(gghighlight)
+library(paletteer)
+library(ggExtra)
+library(ggbeeswarm)
+```
+
+```{r}
+space_launch <- read_csv(here("data", "space_launches.csv"))
+```
+
+```{r}
+unique(space_launch$type)
+unique(space_launch$agency)
+```
+
+```{r}
+agency_type <- space_launch %>% 
+  count(agency_type, launch_year) %>% 
+  filter(agency_type != "#VALUE!")
+  
+```
+
+
+```{r}
+ggplot(data = agency_type, aes(x = launch_year, y = n)) +
+  geom_line(aes(color = agency_type),
+             size = 3) +
+  theme(panel.background = element_rect(fill = "azure2", color = "darkgoldenrod2", size = 5),
+        plot.background = element_rect(fill = "cornflowerblue", color = "purple", size = 3),
+        axis.text = element_text(color = "blue3", size = 15),
+        panel.grid = element_line(color = "orange", size = 1.5)) +
+  labs(title = "Space Launches by Agency Type",
+       x = "earth year",
+       y = "number of launches")
+```
+       
+ggplot(data = lizards, aes(x = total_length, y = weight)) +
+  geom_point() +
+  theme(panel.background = element_rect(fill = "yellow", color = "purple", size = 10),
+        panel.grid.major.x = element_line(color = "red", size = 2), # most specific command wins
+        panel.grid.major = element_line(color = "blue"),
+        panel.grid.major.y = element_line(color = "orange", size = 1),
+        plot.background = element_rect(fill = "cyan4"),
+        axis.text.x = element_text(color = "orange"),
+        axis.title = element_text(color = "yellow", size = 12))
+# use `panel.grid = element_blank()` for no grid lines  
+# panel is about where the data is shown
+# plot is the larger background

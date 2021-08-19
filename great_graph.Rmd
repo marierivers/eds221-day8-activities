@@ -1,0 +1,90 @@
+---
+title: "great_graph"
+author: "Marie Rivers"
+date: "8/18/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(dplyr)
+
+library(patchwork)
+library(ggrepel)
+library(gghighlight)
+library(paletteer)
+library(ggExtra)
+library(ggbeeswarm)
+```
+
+```{r}
+sf_data <- read_csv(here("data", "San_Francisco_Communitywide_Greenhouse_Gas_inventory.csv"))
+```
+Task 2: Wrangling practice with the SF Greenhouse Gas data
+```{r}
+# Create a summary table of total annual greenhouse gas emissions (only from Emissions_mtCO2e column) by sector_general
+sf_sector <- sf_data %>% 
+  group_by(Sector_General) %>% 
+  summarise(total_annual_ghg_emmission = sum(Emissions_mtCO2e))
+
+# Create a summary table of total annual greenhouse gas emissions (only from Emissions_mtCO2e column) by year and commodity type
+sf_year_commodity <- sf_data %>%
+  group_by(Calendar_Year, Commodity_Type) %>% 
+  summarise(total_annual_ghg_emmission = sum(Emissions_mtCO2e))
+
+# Create a subset of the data that only contains observations from 2005 on, only for observations where Sector_Detail2 contains the pattern “PG&E”, then limit to columns Calendar_Year, Sector_Detail2 and Emissions_mtCO2e.
+class(sf_data$Calendar_Year)
+
+sf_subset <- sf_data %>% 
+  filter(Calendar_Year >= 2005) %>% 
+  filter(str_detect(Sector_Detail2, "PG&E")) %>% 
+  select(Calendar_Year, Sector_Detail2, Emissions_mtCO2e)
+```
+```{r}
+unique(sf_data$Commodity_Type)
+unique(sf_data$Sector_General)
+```
+
+Task 3: Do your data viz best
+```{r}
+sf_graph_data <- sf_data %>% 
+  filter(Sector_General == "Transportation") %>% 
+  filter(Calendar_Year >= 2015) %>% 
+  group_by(Calendar_Year, Sector_Detail1) %>% 
+  summarise(tot_annual_emmission = sum(Emissions_mtCO2e))
+```
+
+```{r}
+great_graph <- ggplot(data = sf_graph_data, aes(x = Calendar_Year, y = tot_annual_emmission)) +
+  geom_col(aes(color = Sector_Detail1,
+               fill = Sector_Detail1),
+           show.legend = FALSE) +
+  facet_wrap(~Sector_Detail1) +
+  scale_fill_paletteer_d(palette = "lisa::RobertDelaunay") +
+  scale_color_paletteer_d(palette = "lisa::RobertDelaunay") +
+  scale_x_continuous(breaks = seq(from = 2010, to = 2019, by = 1)) +
+  scale_y_continuous(labels = scales::comma) +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.y = element_line(color = "lightgray"),
+        axis.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 8),
+        axis.title = element_text(size = 10),) +
+  labs(title = "Greenhouse Gas Emmissions from Transportation in San Francisco",
+       subtitle = "Source: San Francisco Communitywide Greenhouse Gas Inventory",
+       x = "year",
+       y = "annual emmisssions (metric tons of CO2)")
+ 
+ggsave(here("figs", "great_graph_marie.jpg"), plot = great_graph) 
+```
+theme(panel.background = element_rect(fill = "yellow", color = "purple", size = 10),
+        panel.grid.major.x = element_line(color = "red", size = 2), # most specific command wins
+        panel.grid.major = element_line(color = "blue"),
+        panel.grid.major.y = element_line(color = "orange", size = 1),
+        plot.background = element_rect(fill = "cyan4"),
+        axis.text.x = element_text(color = "orange"),
+        axis.title = element_text(color = "yellow", size = 12))
+
