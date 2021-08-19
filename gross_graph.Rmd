@@ -36,16 +36,18 @@ agency_type <- space_launch %>%
 
 
 ```{r}
-ggplot(data = agency_type, aes(x = launch_year, y = n)) +
+gross_graph <- ggplot(data = agency_type, aes(x = launch_year, y = n)) +
   geom_line(aes(color = agency_type),
              size = 3) +
   theme(panel.background = element_rect(fill = "azure2", color = "darkgoldenrod2", size = 5),
         plot.background = element_rect(fill = "cornflowerblue", color = "purple", size = 3),
-        axis.text = element_text(color = "blue3", size = 15),
+        axis.text = element_text(color = "blue3", size = 15, angle = -15),
         panel.grid = element_line(color = "orange", size = 1.5)) +
   labs(title = "Space Launches by Agency Type",
        x = "earth year",
        y = "number of launches")
+
+ggsave(here("figs", "gross_graph_marie.jpg"), plot = gross_graph)
 ```
        
 ggplot(data = lizards, aes(x = total_length, y = weight)) +
